@@ -6,7 +6,7 @@ type TeamKey = "celtics" | "knicks";
 type Sentiment = "hype" | "roast" | "neutral";
 type Mode = "hype_my_team" | "roast_opponent" | "balanced_chaos";
 type Intensity = "mild" | "spicy" | "unhinged_clean";
-type Persona = "hype_announcer" | "boston_fan" | "sportscenter_parody" | "arena_mc";
+type Persona = "announcer";
 
 type GameEvent = {
   quarter: string;
@@ -210,7 +210,7 @@ export default function HomePage() {
   const [selectedTeam, setSelectedTeam] = useState<TeamKey | null>(null);
   const [mode, setMode] = useState<Mode>("balanced_chaos");
   const [intensity, setIntensity] = useState<Intensity>("spicy");
-  const [persona, setPersona] = useState<Persona>("arena_mc");
+  const [persona, setPersona] = useState<Persona>("announcer");
   const [eventIndex, setEventIndex] = useState(0);
   const [isLoadingCommentary, setIsLoadingCommentary] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -428,10 +428,7 @@ export default function HomePage() {
           </select>
           <label style={styles.label}>Commentary Persona</label>
           <select style={styles.select} value={persona} onChange={(e) => setPersona(e.target.value as Persona)}>
-            <option value="hype_announcer">Hype Announcer</option>
-            <option value="boston_fan">Boston Fan</option>
-            <option value="sportscenter_parody">SportsCenter Parody</option>
-            <option value="arena_mc">Arena MC</option>
+            <option value="announcer">Announcer</option>
           </select>
           <button
             style={styles.switchBtn}

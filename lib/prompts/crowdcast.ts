@@ -1,10 +1,7 @@
 import type { CommentaryIntensity, CommentaryMode, CommentaryPersona } from "../types";
 
 const PERSONA_LINES: Record<CommentaryPersona, string> = {
-  hype_announcer: "Style: energetic baritone broadcast voice with confident swagger.",
-  boston_fan: "Style: witty Boston fan voice with bold, punchy one-liners.",
-  sportscenter_parody: "Style: playful SportsCenter parody pacing with sharp jokes.",
-  arena_mc: "Style: short arena-MC calls with big crowd-command energy.",
+  announcer: "Style: energetic baritone sports announcer voice with confident swagger.",
 };
 
 const INTENSITY_LINES: Record<CommentaryIntensity, string> = {

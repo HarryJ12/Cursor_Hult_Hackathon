@@ -18,12 +18,7 @@ function isIntensity(value: unknown): value is CommentaryIntensity {
 }
 
 function isPersona(value: unknown): value is CommentaryPersona {
-  return (
-    value === "hype_announcer" ||
-    value === "boston_fan" ||
-    value === "sportscenter_parody" ||
-    value === "arena_mc"
-  );
+  return value === "announcer";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

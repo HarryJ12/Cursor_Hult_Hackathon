@@ -1,10 +1,6 @@
 export type CommentaryMode = "hype_my_team" | "roast_opponent" | "balanced_chaos";
 export type CommentaryIntensity = "mild" | "spicy" | "unhinged_clean";
-export type CommentaryPersona =
-  | "hype_announcer"
-  | "boston_fan"
-  | "sportscenter_parody"
-  | "arena_mc";
+export type CommentaryPersona = "announcer";
 
 export type CommentarySentiment = "hype" | "roast" | "neutral";
 
