@@ -46,6 +46,57 @@ This is not a generic AI commentator. This is personalized fan commentary for th
 - Event objects in JSON structure backend can consume
 - Keep schema simple and deterministic
 
+## Recommended File Structure
+
+Use this as the baseline structure so each person can own their area cleanly. It is okay to add files (for scripts or helpers), but stay close to this layout.
+
+```txt
+Cursor_Hult_Hackathon/
+├─ README.md
+├─ package.json
+├─ next.config.ts
+├─ tsconfig.json
+├─ .env.example
+├─ app/
+│  ├─ page.tsx                         # Single-page MVP UI (frontend owner)
+│  └─ api/
+│     ├─ commentary/
+│     │  └─ route.ts                   # Grok/LLM commentary generation (backend owner)
+│     └─ voice/
+│        └─ route.ts                   # ElevenLabs TTS (optional, backend owner)
+├─ components/
+│  ├─ controls/
+│  │  ├─ TeamSelector.tsx
+│  │  ├─ ModeSelector.tsx
+│  │  ├─ IntensitySelector.tsx
+│  │  └─ PersonaSelector.tsx
+│  ├─ game/
+│  │  ├─ LiveEventCard.tsx
+│  │  ├─ ScoreBoard.tsx
+│  │  └─ CrowdEnergyMeter.tsx
+│  └─ commentary/
+│     ├─ CommentaryPanel.tsx
+│     ├─ SentimentBadge.tsx
+│     └─ AudioPlayerButton.tsx
+├─ lib/
+│  ├─ events/
+│  │  ├─ demo-events.ts                # 8 hardcoded events for demo flow
+│  │  └─ event-types.ts
+│  ├─ prompts/
+│  │  └─ crowdcast-system-prompt.ts
+│  ├─ api/
+│  │  ├─ commentary-client.ts
+│  │  └─ voice-client.ts
+│  ├─ audio/
+│  │  └─ browser-speech.ts             # Fallback if ElevenLabs is not ready
+│  └─ data/
+│     └─ game-events.json              # DB partner can own and evolve this contract
+├─ scripts/
+│  └─ seed-demo-events.ts              # optional helper script
+└─ public/
+   └─ audio/                           # optional cached/generated clips
+```
+
 ## MVP Inputs
 
 - Sport: NBA
