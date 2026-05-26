@@ -147,6 +147,62 @@ const DEMO_EVENTS: GameEvent[] = [
   },
 ];
 
+const CELTICS_CANNED: Array<{
+  line: string;
+  sentiment: Sentiment;
+  crowdEnergy: number;
+  screenCaption: string;
+}> = [
+  {
+    line: "Jayson Tatum my glorious king hits a deep step back three, making the Knicks wet their diapers.",
+    sentiment: "hype",
+    crowdEnergy: 96,
+    screenCaption: "TATUM FROM DEEP",
+  },
+  {
+    line: "Knicks players always losing aura.",
+    sentiment: "roast",
+    crowdEnergy: 78,
+    screenCaption: "NO AURA",
+  },
+  {
+    line: "My glorious king and his amazing footwork — the Knicks need a GPS to see him. He can't be stopped.",
+    sentiment: "hype",
+    crowdEnergy: 95,
+    screenCaption: "JB UNSTOPPABLE",
+  },
+  {
+    line: "You're gonna need the entire Knicks franchise to guard my manz.",
+    sentiment: "roast",
+    crowdEnergy: 70,
+    screenCaption: "WHOLE TEAM ON ONE",
+  },
+  {
+    line: "The crowd and I are exploding right now. Knicks, what are we doing?",
+    sentiment: "hype",
+    crowdEnergy: 97,
+    screenCaption: "WHITE FROM THE CORNER",
+  },
+  {
+    line: "Mr. Hart loves to cut on them Knicks. Somebody tell the Knicks to get their hairline fixed by Josh Hart.",
+    sentiment: "roast",
+    crowdEnergy: 72,
+    screenCaption: "HAIRLINE WATCH",
+  },
+  {
+    line: "Celtics, what are we doing??? Porzingis sent that one back to sender.",
+    sentiment: "hype",
+    crowdEnergy: 92,
+    screenCaption: "KP REJECTS",
+  },
+  {
+    line: "OH MY GOD CELTICS FOR THE WIN. GOODBYE KNICKS.",
+    sentiment: "hype",
+    crowdEnergy: 100,
+    screenCaption: "CELTICS WIN",
+  },
+];
+
 const VOICE_BY_PERSONA: Record<Persona, string> = {
   hype_announcer: "pNInz6obpgDQGcFmaJgB",
   boston_fan: "TxGEqnHWrfWFTfGW9XjX",
@@ -209,6 +265,24 @@ export default function HomePage() {
     stopVoice();
     setIsLoadingCommentary(true);
     const ev = DEMO_EVENTS[index];
+
+    if (selectedTeam === "celtics" && CELTICS_CANNED[index]) {
+      const canned = CELTICS_CANNED[index];
+      const data: CommentaryResponse = {
+        commentary: canned.line,
+        sentiment: canned.sentiment,
+        crowdEnergy: canned.crowdEnergy,
+        screenCaption: canned.screenCaption,
+      };
+      setCommentary(data);
+      setHistory((prev) =>
+        [{ play: ev.event.description, line: data.commentary, sentiment: data.sentiment }, ...prev].slice(0, 5)
+      );
+      setIsLoadingCommentary(false);
+      void playVoice(data.commentary);
+      return;
+    }
+
     try {
       const response = await fetch("/api/commentary", {
         method: "POST",
