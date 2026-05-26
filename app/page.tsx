@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 type TeamKey = "celtics" | "knicks";
 type Sentiment = "hype" | "roast" | "neutral";
@@ -170,6 +170,19 @@ export default function HomePage() {
     screenCaption: "TRASH TALK LIVE",
   });
   const [history, setHistory] = useState<Array<{ play: string; line: string; sentiment: Sentiment }>>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  function stopVoice() {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+  }
 
   const currentEvent = DEMO_EVENTS[eventIndex];
   const supportTeamName = selectedTeam === "celtics" ? "Celtics" : "Knicks";
@@ -184,19 +197,16 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!selectedTeam) return;
-    runCommentary(0);
-    const timer = setInterval(() => {
-      setEventIndex((prev) => {
-        const next = (prev + 1) % DEMO_EVENTS.length;
-        runCommentary(next);
-        return next;
-      });
-    }, 6000);
-    return () => clearInterval(timer);
+    runCommentary(eventIndex);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTeam, mode, intensity, persona]);
+  }, [selectedTeam, mode, intensity, persona, eventIndex]);
+
+  const goPrev = () => setEventIndex((i) => Math.max(0, i - 1));
+  const goNext = () => setEventIndex((i) => Math.min(DEMO_EVENTS.length - 1, i + 1));
+  const replay = () => runCommentary(eventIndex);
 
   async function runCommentary(index: number) {
+    stopVoice();
     setIsLoadingCommentary(true);
     const ev = DEMO_EVENTS[index];
     try {
@@ -245,6 +255,7 @@ export default function HomePage() {
   }
 
   async function playVoice(text: string) {
+    stopVoice();
     setIsSpeaking(true);
     try {
       const voiceId = VOICE_BY_PERSONA[persona];
@@ -257,7 +268,11 @@ export default function HomePage() {
 
       if (data?.audioUrl) {
         const audio = new Audio(data.audioUrl);
-        audio.onended = () => setIsSpeaking(false);
+        audioRef.current = audio;
+        audio.onended = () => {
+          if (audioRef.current === audio) audioRef.current = null;
+          setIsSpeaking(false);
+        };
         await audio.play();
         return;
       }
@@ -356,18 +371,64 @@ export default function HomePage() {
             <option value="sportscenter_parody">SportsCenter Parody</option>
             <option value="arena_mc">Arena MC</option>
           </select>
-          <button style={styles.switchBtn} onClick={() => setSelectedTeam(null)}>
+          <button
+            style={styles.switchBtn}
+            onClick={() => {
+              setSelectedTeam(null);
+              setEventIndex(0);
+            }}
+          >
             Switch Team
           </button>
         </aside>
 
         <section style={styles.centerPanel}>
           <div style={styles.eventCard}>
-            <p style={styles.kicker}>Current Play</p>
+            <div style={styles.eventHeader}>
+              <p style={styles.kicker}>Current Play</p>
+              <span style={styles.playCount}>
+                Play {eventIndex + 1} / {DEMO_EVENTS.length}
+              </span>
+            </div>
             <h2 style={styles.eventLine}>{currentEvent.event.description}</h2>
             <p style={styles.meta}>
               {currentEvent.event.player} · {currentEvent.event.team}
             </p>
+            <div style={styles.navRow}>
+              <button
+                style={{ ...styles.navBtn, opacity: eventIndex === 0 ? 0.4 : 1 }}
+                onClick={goPrev}
+                disabled={eventIndex === 0 || isLoadingCommentary}
+              >
+                ◀ Prev
+              </button>
+              <button
+                style={{ ...styles.navBtn, background: `${teamTheme.main}33`, borderColor: `${teamTheme.main}aa` }}
+                onClick={replay}
+                disabled={isLoadingCommentary}
+              >
+                ↻ Replay
+              </button>
+              <button
+                style={{
+                  ...styles.navBtn,
+                  background: isSpeaking ? "#ff313126" : "#1a2240",
+                  borderColor: isSpeaking ? "#ff3131aa" : "#38436e",
+                  opacity: isSpeaking ? 1 : 0.45,
+                }}
+                onClick={stopVoice}
+                disabled={!isSpeaking}
+              >
+                ⏹ Stop
+              </button>
+              <button
+                style={{ ...styles.navBtn, opacity: eventIndex === DEMO_EVENTS.length - 1 ? 0.4 : 1 }}
+                onClick={goNext}
+                disabled={eventIndex === DEMO_EVENTS.length - 1 || isLoadingCommentary}
+              >
+                Next ▶
+              </button>
+            </div>
           </div>
 
           <div style={styles.orbWrap}>
@@ -541,6 +602,21 @@ const styles: Record<string, CSSProperties> = {
     gap: 10,
   },
   eventCard: { background: "#0c1020", border: "1px solid #2f3860", borderRadius: 12, padding: 12 },
+  eventHeader: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+  playCount: { fontSize: 12, color: "#96a3d3", fontWeight: 700, letterSpacing: 0.4 },
+  navRow: { display: "flex", gap: 8, marginTop: 12 },
+  navBtn: {
+    flex: 1,
+    padding: "9px 10px",
+    borderRadius: 10,
+    border: "1px solid #38436e",
+    background: "#1a2240",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: 13,
+    cursor: "pointer",
+    transition: "opacity 160ms",
+  },
   kicker: { margin: 0, color: "#96a3d3", fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase" },
   eventLine: { margin: "8px 0 6px", fontSize: 22, lineHeight: 1.2 },
   meta: { margin: 0, color: "#b7c0e0", fontSize: 13 },
