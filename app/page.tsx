@@ -203,12 +203,7 @@ const CELTICS_CANNED: Array<{
   },
 ];
 
-const VOICE_BY_PERSONA: Record<Persona, string> = {
-  hype_announcer: "pNInz6obpgDQGcFmaJgB",
-  boston_fan: "TxGEqnHWrfWFTfGW9XjX",
-  sportscenter_parody: "VR6AewLTigWG4xSOukaG",
-  arena_mc: "ErXwobaYiN019PkySvjV",
-};
+const FIXED_VOICE_ID = "qZkuFcRFTdS6vkYu5ABx";
 const TALKING_GUY_IMAGE = "/images/trash-talk-guy.png";
 
 export default function HomePage() {
@@ -332,11 +327,10 @@ export default function HomePage() {
     stopVoice();
     setIsSpeaking(true);
     try {
-      const voiceId = VOICE_BY_PERSONA[persona];
       const response = await fetch("/api/voice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, voiceId }),
+        body: JSON.stringify({ text, voiceId: FIXED_VOICE_ID }),
       });
       const data = (await response.json()) as { audioUrl?: string | null };
 
@@ -348,12 +342,6 @@ export default function HomePage() {
           setIsSpeaking(false);
         };
         await audio.play();
-        return;
-      }
-      if (typeof window !== "undefined" && window.speechSynthesis) {
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.onend = () => setIsSpeaking(false);
-        window.speechSynthesis.speak(utter);
         return;
       }
       setIsSpeaking(false);
@@ -438,7 +426,7 @@ export default function HomePage() {
             <option value="spicy">Spicy</option>
             <option value="unhinged_clean">Unhinged but Clean</option>
           </select>
-          <label style={styles.label}>Voice Persona</label>
+          <label style={styles.label}>Commentary Persona</label>
           <select style={styles.select} value={persona} onChange={(e) => setPersona(e.target.value as Persona)}>
             <option value="hype_announcer">Hype Announcer</option>
             <option value="boston_fan">Boston Fan</option>
