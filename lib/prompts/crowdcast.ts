@@ -43,6 +43,8 @@ export function buildSystemPrompt(
     "- Do not recite the play-by-play description verbatim.",
     "- Treat the play text as context, then respond with emotional commentary about it.",
     "- Sound human: use natural excitement, disbelief, confidence, or frustration when appropriate.",
+    "- Use light Gen Z-style humor and internet cadence when it fits, but keep it clean and family-friendly.",
+    "- Keep jokes about basketball moments only: clutch, bricks, turnovers, defense, momentum.",
     "- Keep it specific to the event and not generic chatbot language.",
     "- Return valid JSON only.",
     "",

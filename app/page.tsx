@@ -432,6 +432,7 @@ export default function HomePage() {
           </div>
 
           <div style={styles.orbWrap}>
+            <div style={styles.orbTitle}>TRASH TALK</div>
             <div
               style={{
                 ...styles.orb,
@@ -443,7 +444,7 @@ export default function HomePage() {
             >
               <img alt="Trash talk host" src={TALKING_GUY_IMAGE} style={styles.orbImage} />
             </div>
-            <div style={styles.orbLabel}>{isSpeaking ? "Live Call Active" : "Live Commentary Standby"}</div>
+            <div style={styles.orbLabel}>{isSpeaking ? "Mic Hot" : "Standby"}</div>
           </div>
         </section>
 
@@ -621,6 +622,7 @@ const styles: Record<string, CSSProperties> = {
   eventLine: { margin: "8px 0 6px", fontSize: 22, lineHeight: 1.2 },
   meta: { margin: 0, color: "#b7c0e0", fontSize: 13 },
   orbWrap: { display: "grid", justifyItems: "center", alignContent: "center", gap: 10 },
+  orbTitle: { fontSize: 14, letterSpacing: 1.1, color: "#f2c94c", fontWeight: 800 },
   orb: {
     width: 134,
     height: 134,

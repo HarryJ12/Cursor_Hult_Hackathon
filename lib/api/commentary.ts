@@ -1,5 +1,6 @@
 import { buildSystemPrompt } from "../prompts/crowdcast";
 import type {
+  CommentaryPersona,
   CommentaryRequest,
   CommentaryResponse,
   CommentarySentiment,
@@ -78,22 +79,55 @@ function inferSentiment(input: CommentaryRequest): CommentarySentiment {
   return "neutral";
 }
 
+const PERSONA_REACTIONS: Record<CommentaryPersona, Record<CommentarySentiment, string[]>> = {
+  hype_announcer: {
+    hype: ["That arena just exploded!", "Statement play. Absolute authority.", "Big-time moment under bright lights."],
+    roast: ["That possession just got embarrassed on national TV.", "That was a lowlight in real time.", "Defense checked out and paid for it."],
+    neutral: ["Momentum is shifting right now.", "This game just got spicy.", "The pressure is climbing every possession."],
+  },
+  boston_fan: {
+    hype: ["Garden is rocking right now.", "That was pure Boston swagger.", "He just sent the building into orbit."],
+    roast: ["That looked like defense running on dial-up.", "They got cooked and everybody saw it.", "That play was rough, no sugarcoating."],
+    neutral: ["This one is getting chaotic fast.", "Nobody is breathing easy now.", "This game is on edge every trip."],
+  },
+  sportscenter_parody: {
+    hype: ["Highlight reel just got a new cover photo.", "Clip that and loop it all week.", "That was all gas, zero hesitation."],
+    roast: ["That possession belongs in a blooper package.", "Shot selection entered witness protection.", "They just speed-ran a bad decision."],
+    neutral: ["Tension meter is officially red.", "Both sides are trading haymakers now.", "This game script keeps getting weird."],
+  },
+  arena_mc: {
+    hype: ["Crowd up! That was nasty work!", "Hands up! Big-time bucket!", "That was cold-blooded execution!"],
+    roast: ["Ooof, that was a brick parade!", "Defense asleep, scoreboard awake!", "That possession was straight turbulence!"],
+    neutral: ["Everybody up, this one is tight!", "Noise up, pressure is rising!", "Game on a knife edge right now!"],
+  },
+};
+
+function pickLine(lines: string[], seed: string): string {
+  const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return lines[hash % lines.length];
+}
+
 function fallbackResponse(input: CommentaryRequest): CommentaryResponse {
   const eventDescription = String(input.event.description ?? "Play");
   const eventTeam = getEventTeam(input) || "That team";
   const sentiment = inferSentiment(input);
+  const persona = input.persona ?? "arena_mc";
+  const reaction = pickLine(
+    PERSONA_REACTIONS[persona][sentiment],
+    `${eventDescription}|${persona}|${input.mode}|${input.intensity}`
+  );
 
-  const base =
+  const baseLine =
     sentiment === "roast"
-      ? `${eventDescription} and ${eventTeam} just got put on a lowlight reel.`
+      ? `${reaction} ${eventTeam} just got put on a lowlight reel.`
       : sentiment === "hype"
-      ? `${eventDescription} and the crowd is exploding right now.`
-      : `${eventDescription} and momentum is swinging.`;
+      ? `${reaction} Crowd energy is through the roof.`
+      : `${reaction}`;
 
   const energy = input.intensity === "mild" ? 62 : input.intensity === "spicy" ? 78 : 92;
 
   return {
-    commentary: base.slice(0, 180),
+    commentary: baseLine.slice(0, 180),
     sentiment,
     crowdEnergy: clampEnergy(energy),
     screenCaption: "PLAY OF THE MOMENT",
@@ -115,6 +149,8 @@ export async function generateCommentary(input: CommentaryRequest): Promise<Comm
     `Intensity: ${input.intensity}`,
     `Persona: ${input.persona}`,
     "In balanced_chaos mode, roast whichever team made the bad play and hype whichever team made the good play.",
+    "Do not narrate the play literally. React to it with funny emotional commentary.",
+    "Keep it clean and witty. No profanity or identity attacks.",
     "",
     "Current event JSON:",
     JSON.stringify(input.event),
