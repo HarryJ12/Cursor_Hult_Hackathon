@@ -148,11 +148,12 @@ const DEMO_EVENTS: GameEvent[] = [
 ];
 
 const VOICE_BY_PERSONA: Record<Persona, string> = {
-  hype_announcer: "21m00Tcm4TlvDq8ikWAM",
-  boston_fan: "29vD33N1CtxCmqQRPOHJ",
-  sportscenter_parody: "AZnzlk1XvdvUeBnXmlld",
-  arena_mc: "EXAVITQu4vr4xnSDxMaL",
+  hype_announcer: "pNInz6obpgDQGcFmaJgB",
+  boston_fan: "TxGEqnHWrfWFTfGW9XjX",
+  sportscenter_parody: "VR6AewLTigWG4xSOukaG",
+  arena_mc: "ErXwobaYiN019PkySvjV",
 };
+const TALKING_GUY_IMAGE = "/images/trash-talk-guy.png";
 
 export default function HomePage() {
   const [selectedTeam, setSelectedTeam] = useState<TeamKey | null>(null);
@@ -225,6 +226,7 @@ export default function HomePage() {
       setHistory((prev) =>
         [{ play: ev.event.description, line: safeData.commentary, sentiment: safeData.sentiment }, ...prev].slice(0, 5)
       );
+      void playVoice(safeData.commentary);
     } catch {
       const fallback: CommentaryResponse = {
         commentary: `${supportTeamName} bringing heat while ${targetTeamName} scramble to respond.`,
@@ -236,19 +238,20 @@ export default function HomePage() {
       setHistory((prev) =>
         [{ play: ev.event.description, line: fallback.commentary, sentiment: fallback.sentiment }, ...prev].slice(0, 5)
       );
+      void playVoice(fallback.commentary);
     } finally {
       setIsLoadingCommentary(false);
     }
   }
 
-  async function handleSpeak() {
+  async function playVoice(text: string) {
     setIsSpeaking(true);
     try {
       const voiceId = VOICE_BY_PERSONA[persona];
       const response = await fetch("/api/voice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: commentary.commentary, voiceId }),
+        body: JSON.stringify({ text, voiceId }),
       });
       const data = (await response.json()) as { audioUrl?: string | null };
 
@@ -259,7 +262,7 @@ export default function HomePage() {
         return;
       }
       if (typeof window !== "undefined" && window.speechSynthesis) {
-        const utter = new SpeechSynthesisUtterance(commentary.commentary);
+        const utter = new SpeechSynthesisUtterance(text);
         utter.onend = () => setIsSpeaking(false);
         window.speechSynthesis.speak(utter);
         return;
@@ -368,9 +371,7 @@ export default function HomePage() {
           </div>
 
           <div style={styles.orbWrap}>
-            <button
-              onClick={handleSpeak}
-              disabled={isLoadingCommentary}
+            <div
               style={{
                 ...styles.orb,
                 boxShadow: isSpeaking
@@ -379,9 +380,9 @@ export default function HomePage() {
                 transform: isSpeaking ? "scale(1.04)" : "scale(1)",
               }}
             >
-              🎙️
-            </button>
-            <div style={styles.orbLabel}>{isSpeaking ? "Talking..." : "Tap to speak"}</div>
+              <img alt="Trash talk host" src={TALKING_GUY_IMAGE} style={styles.orbImage} />
+            </div>
+            <div style={styles.orbLabel}>{isSpeaking ? "Live Call Active" : "Live Commentary Standby"}</div>
           </div>
         </section>
 
@@ -552,10 +553,18 @@ const styles: Record<string, CSSProperties> = {
     background: "radial-gradient(circle at 30% 30%, #2b3460, #141a31 58%, #0b1020)",
     color: "#fff",
     fontSize: 46,
-    cursor: "pointer",
     transition: "transform 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+    display: "grid",
+    placeItems: "center",
   },
   orbLabel: { color: "#aab3d5", fontSize: 13, fontWeight: 600 },
+  orbImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: "50%",
+    objectFit: "cover",
+    border: "2px solid #3b4777",
+  },
   energyRow: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#d5dcf7" },
   energyTrack: { marginTop: 8, width: "100%", height: 10, background: "#1c233f", borderRadius: 999, overflow: "hidden" },
   energyFill: { height: "100%", borderRadius: 999, transition: "width 320ms cubic-bezier(0.22, 1, 0.36, 1)" },

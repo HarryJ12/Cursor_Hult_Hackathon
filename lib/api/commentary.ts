@@ -14,15 +14,81 @@ function parseSentiment(value: unknown): CommentarySentiment {
   return "neutral";
 }
 
-function fallbackResponse(input: CommentaryRequest): CommentaryResponse {
-  const team = input.supportTeam ?? input.homeTeam;
-  const base =
-    input.mode === "roast_opponent"
-      ? `${String(input.event.description ?? "Play")} and ${input.targetTeam} are getting cooked.`
-      : `${team} just made a statement play.`;
+function normalizeText(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
 
-  const sentiment: CommentarySentiment =
-    input.mode === "roast_opponent" ? "roast" : input.mode === "hype_my_team" ? "hype" : "neutral";
+function isTooLiteral(eventDescription: string, commentary: string): boolean {
+  const eventNorm = normalizeText(eventDescription);
+  const commentaryNorm = normalizeText(commentary);
+  if (!eventNorm || !commentaryNorm) return false;
+  return commentaryNorm.includes(eventNorm) || eventNorm.includes(commentaryNorm);
+}
+
+function getEventType(input: CommentaryRequest): string {
+  return String(input.event.type ?? "").toLowerCase();
+}
+
+function getEventTeam(input: CommentaryRequest): string {
+  return String(input.event.team ?? "");
+}
+
+function isNegativeEventType(eventType: string): boolean {
+  const negativeTypes = [
+    "missed",
+    "turnover",
+    "foul",
+    "offensive_foul",
+    "blocked",
+    "block",
+    "rejected",
+    "airball",
+  ];
+  return negativeTypes.some((t) => eventType.includes(t));
+}
+
+function isPositiveEventType(eventType: string): boolean {
+  const positiveTypes = ["made", "three", "dunk", "layup", "and_one", "assist", "steal", "block", "final"];
+  return positiveTypes.some((t) => eventType.includes(t));
+}
+
+function inferSentiment(input: CommentaryRequest): CommentarySentiment {
+  const eventType = getEventType(input);
+  const eventTeam = getEventTeam(input).toLowerCase();
+  const supportTeam = String(input.supportTeam ?? input.homeTeam).toLowerCase();
+  const targetTeam = String(input.targetTeam).toLowerCase();
+  const negative = isNegativeEventType(eventType);
+  const positive = isPositiveEventType(eventType);
+
+  if (input.mode === "roast_opponent") {
+    if (eventTeam === targetTeam && negative) return "roast";
+    if (eventTeam === supportTeam && positive) return "hype";
+    return "neutral";
+  }
+
+  if (input.mode === "hype_my_team") {
+    if (eventTeam === supportTeam && positive) return "hype";
+    if (eventTeam === targetTeam && negative) return "hype";
+    return "neutral";
+  }
+
+  // balanced_chaos: roast any team that fails, hype any team that shines
+  if (negative) return "roast";
+  if (positive) return "hype";
+  return "neutral";
+}
+
+function fallbackResponse(input: CommentaryRequest): CommentaryResponse {
+  const eventDescription = String(input.event.description ?? "Play");
+  const eventTeam = getEventTeam(input) || "That team";
+  const sentiment = inferSentiment(input);
+
+  const base =
+    sentiment === "roast"
+      ? `${eventDescription} and ${eventTeam} just got put on a lowlight reel.`
+      : sentiment === "hype"
+      ? `${eventDescription} and the crowd is exploding right now.`
+      : `${eventDescription} and momentum is swinging.`;
 
   const energy = input.intensity === "mild" ? 62 : input.intensity === "spicy" ? 78 : 92;
 
@@ -48,6 +114,7 @@ export async function generateCommentary(input: CommentaryRequest): Promise<Comm
     `Mode: ${input.mode}`,
     `Intensity: ${input.intensity}`,
     `Persona: ${input.persona}`,
+    "In balanced_chaos mode, roast whichever team made the bad play and hype whichever team made the good play.",
     "",
     "Current event JSON:",
     JSON.stringify(input.event),
@@ -99,10 +166,24 @@ export async function generateCommentary(input: CommentaryRequest): Promise<Comm
     return fallbackResponse(input);
   }
 
+  let commentaryText = String(parsed.commentary).slice(0, 220);
+  const eventDescription = String(input.event.description ?? "");
+  if (isTooLiteral(eventDescription, commentaryText)) {
+    const fallback = fallbackResponse(input);
+    commentaryText = fallback.commentary;
+  }
+
+  const inferredSentiment = inferSentiment(input);
+  const chosenSentiment = parseSentiment(parsed.sentiment);
+  const finalSentiment = input.mode === "balanced_chaos" ? inferredSentiment : chosenSentiment;
+  const baseEnergy = clampEnergy(Number(parsed.crowdEnergy ?? 75));
+  const finalEnergy =
+    finalSentiment === "roast" ? Math.max(80, baseEnergy) : finalSentiment === "hype" ? Math.max(78, baseEnergy) : baseEnergy;
+
   return {
-    commentary: String(parsed.commentary).slice(0, 220),
-    sentiment: parseSentiment(parsed.sentiment),
-    crowdEnergy: clampEnergy(Number(parsed.crowdEnergy ?? 75)),
+    commentary: commentaryText,
+    sentiment: finalSentiment,
+    crowdEnergy: finalEnergy,
     screenCaption: parsed.screenCaption ? String(parsed.screenCaption).slice(0, 48) : undefined,
   };
 }
