@@ -243,6 +243,6 @@ All rights reserved.
 
 <div align="center">
 
-**Built by Team TrashTalk at the Hult Hackathon 2026**
+**Built by Team TrashTalk at the Cursor Boston X Hult Hackathon 2026**
 
 </div>
