@@ -1,4 +1,4 @@
-# TrashTalk - AI Sports Commentary Companion
+# TrashTalk: Live NBA AI Roasts 
 
 <div align="center">
 
