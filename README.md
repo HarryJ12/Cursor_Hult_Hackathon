@@ -1,295 +1,248 @@
-# Cursor_Hult_Hackathon
+# TrashTalk - AI Sports Commentary Companion
 
-## Trash Talk — Team Agent Handoff
+<div align="center">
 
-This README is the shared source of truth so all three of us (and our agents) can work in parallel without overlap.
+**Turn live game events into clean, team-biased hype and roast commentary for fans, watch parties, and demo screens**
 
-## Product
+[![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB.svg)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6.svg)](https://www.typescriptlang.org/)
+[![xAI](https://img.shields.io/badge/xAI-Grok%20API-111827.svg)](https://x.ai/)
+[![ElevenLabs](https://img.shields.io/badge/ElevenLabs-TTS-7C3AED.svg)](https://elevenlabs.io/)
 
-- Name: **Trash Talk**
-- One-liner: **AI-powered alternate commentary that turns live game events into team-biased, family-friendly hype or roast audio for fans, watch parties, and stadium screens.**
+</div>
 
-This is not a generic AI commentator. This is personalized fan commentary for the team you love and the team you want cooked.
+---
 
-## Pitch (exact framing)
+## Overview
 
-> Sports broadcasts are still one-size-fits-all. CrowdCast AI turns live game events into personalized alternate commentary for fans, watch parties, and stadium screens. Pick your team, pick your vibe, and the app generates clean, funny, team-biased commentary with voice playback in real time.
+Most sports commentary is one-size-fits-all.
 
-## Ownership
+Fans want a stream that sounds like *their side* of the rivalry, with personality and energy.
 
-- **You (Harry):** API + ElevenLabs + Grok integration.
-- **Frontend owner:** UI only.
-- **Database owner:** game/event persistence in JSON-ready format for backend consumption.
+**TrashTalk** solves this by turning structured game events into:
 
-### Frontend scope (strict)
+- team-biased commentary
+- family-friendly roast/hype reactions
+- playable AI voice output
+- live fan-energy signals for demo UX
 
-- One page only
-- No auth
-- No DB dependency required for MVP demo
-- Left: controls
-- Center: live event card
-- Right: generated commentary + voice
-- Button: `Generate next call`
-- Crowd reaction meter
-- Sentiment label (`hype` | `roast` | `neutral`)
+This MVP focuses on an East Coast rivalry context (Boston vs New York), which keeps it regionally relevant for local fan culture while staying clean and sponsor-safe.
 
-### Backend/AI scope
+---
 
-- `POST /api/commentary`
-- LLM prompt + safety rules
-- JSON response schema
-- Optional `POST /api/voice` with ElevenLabs
+## Key Features
 
-### Data scope
+- **Single-screen live demo flow** with team selection and event playback
+- **AI commentary generation** (`/api/commentary`) using Grok with guardrails
+- **Voice synthesis** (`/api/voice`) via ElevenLabs when configured
+- **Fallback resilience**: deterministic commentary if APIs are unavailable
+- **Modes and intensity controls**: `hype_my_team`, `roast_opponent`, `balanced_chaos`
+- **Sentiment + crowd energy scoring** for quick visual feedback
 
-- Store one Celtics/Lakers game timeline
-- Event objects in JSON structure backend can consume
-- Keep schema simple and deterministic
+---
 
-## Recommended File Structure
+## Tech Stack
 
-Use this as the baseline structure so each person can own their area cleanly. It is okay to add files (for scripts or helpers), but stay close to this layout.
+### Frontend
+
+- Next.js 16 (App Router)
+- React 19 + TypeScript
+- Client-side state-driven UI in `app/page.tsx`
+
+### Backend (API Routes)
+
+- Next.js Route Handlers (`app/api/*`)
+- Node.js runtime endpoints
+- JSON contracts for commentary and voice payloads
+
+### AI + Voice Integrations
+
+- xAI Grok API (`grok-4.1-fast` default)
+- ElevenLabs TTS (`eleven_multilingual_v2`)
+- Safety-first prompt design (clean language, no identity-based attacks)
+
+---
+
+## Setup
+
+### Prerequisites
+
+- Node.js 20+
+- npm 10+
+- xAI API key (required for live LLM commentary)
+- ElevenLabs API key + voice ID (optional for TTS)
+
+### Installation
+
+1. **Clone the repository**
+```bash
+git clone <your-repo-url>
+cd Cursor_Hult_Hackathon
+```
+
+2. **Install dependencies**
+```bash
+npm install
+```
+
+3. **Configure environment variables**
+```bash
+cp .env.example .env.local
+```
+
+Set the values in `.env.local`:
+```env
+XAI_API_KEY=your_xai_key
+XAI_MODEL=grok-4.1-fast
+ELEVENLABS_API_KEY=your_elevenlabs_key
+ELEVENLABS_DEFAULT_VOICE_ID=your_voice_id
+```
+
+4. **Run development server**
+```bash
+npm run dev
+```
+
+5. **Open the app**
+
+Visit [http://localhost:3000](http://localhost:3000)
+
+### Production Build
+```bash
+npm run build
+npm run start
+```
+
+---
+
+## Project Structure
 
 ```txt
 Cursor_Hult_Hackathon/
-├─ README.md
-├─ package.json
-├─ next.config.ts
-├─ tsconfig.json
-├─ .env.example
-├─ app/
-│  ├─ page.tsx                         # Single-page MVP UI (frontend owner)
-│  └─ api/
-│     ├─ commentary/
-│     │  └─ route.ts                   # Grok/LLM commentary generation (backend owner)
-│     └─ voice/
-│        └─ route.ts                   # ElevenLabs TTS (optional, backend owner)
-├─ components/
-│  ├─ controls/
-│  │  ├─ TeamSelector.tsx
-│  │  ├─ ModeSelector.tsx
-│  │  ├─ IntensitySelector.tsx
-│  │  └─ PersonaSelector.tsx
-│  ├─ game/
-│  │  ├─ LiveEventCard.tsx
-│  │  ├─ ScoreBoard.tsx
-│  │  └─ CrowdEnergyMeter.tsx
-│  └─ commentary/
-│     ├─ CommentaryPanel.tsx
-│     ├─ SentimentBadge.tsx
-│     └─ AudioPlayerButton.tsx
-├─ lib/
-│  ├─ events/
-│  │  ├─ demo-events.ts                # 8 hardcoded events for demo flow
-│  │  └─ event-types.ts
-│  ├─ prompts/
-│  │  └─ crowdcast-system-prompt.ts
-│  ├─ api/
-│  │  ├─ commentary-client.ts
-│  │  └─ voice-client.ts
-│  ├─ audio/
-│  │  └─ browser-speech.ts             # Fallback if ElevenLabs is not ready
-│  └─ data/
-│     └─ game-events.json              # DB partner can own and evolve this contract
-├─ scripts/
-│  └─ seed-demo-events.ts              # optional helper script
-└─ public/
-   └─ audio/                           # optional cached/generated clips
+├── app/
+│   ├── page.tsx
+│   └── api/
+│       ├── commentary/route.ts
+│       └── voice/route.ts
+├── lib/
+│   ├── api/
+│   │   ├── commentary.ts
+│   │   └── voice.ts
+│   ├── prompts/
+│   │   └── crowdcast.ts
+│   ├── events/
+│   │   ├── demo-events.ts
+│   │   └── event-types.ts
+│   ├── data/
+│   │   └── game-events.json
+│   └── types.ts
+├── scripts/
+│   └── seed-demo-events.ts
+├── .env.example
+├── package.json
+└── README.md
 ```
 
-## MVP Inputs
+---
 
-- Sport: NBA
-- Home team: Celtics
-- Opposing team: Lakers
-- Fan mode:
-  - Hype my team
-  - Roast opponent
-  - Balanced chaos
-- Intensity:
-  - Mild
-  - Spicy
-  - Unhinged but clean
-- Voice:
-  - Hype announcer
-  - Boston fan
-  - SportsCenter parody
-  - Arena MC
+## Data Flow
 
-## Fake event JSON example
+### Commentary Generation Flow
 
-```json
-{
-  "game": "Celtics vs Lakers",
-  "quarter": "4th",
-  "time": "1:12",
-  "score": {
-    "Celtics": 104,
-    "Lakers": 101
-  },
-  "event": {
-    "type": "made_three",
-    "player": "Jayson Tatum",
-    "team": "Celtics",
-    "description": "Jayson Tatum makes a 27-foot three pointer"
-  }
-}
+```txt
+Live Event (UI) -> POST /api/commentary
+               -> buildSystemPrompt() + game context
+               -> Grok API (or local fallback response)
+               -> JSON: commentary + sentiment + crowdEnergy
+               -> UI feed + energy meter
 ```
 
-## Demo event sequence (hardcoded)
+### Voice Playback Flow
 
-1. Tatum hits 3
-2. LeBron misses jumper
-3. Brown dunk
-4. Davis turnover
-5. Reaves foul
-6. Porzingis block
-7. Lakers timeout
-8. Celtics win
+```txt
+Generated commentary line -> POST /api/voice
+                         -> ElevenLabs TTS (if configured)
+                         -> Base64 audio URL
+                         -> Browser playback in UI
+```
+
+---
 
 ## API Contracts
 
 ### `POST /api/commentary`
 
 Input:
-
 ```ts
 {
-  event,
-  homeTeam,
-  targetTeam,
-  mode,
-  intensity,
-  persona
+  event: Record<string, unknown>,
+  homeTeam: string,
+  opposingTeam?: string,
+  supportTeam?: string,
+  targetTeam: string,
+  mode: "hype_my_team" | "roast_opponent" | "balanced_chaos",
+  intensity: "mild" | "spicy" | "unhinged_clean",
+  persona: "announcer"
 }
 ```
 
 Output:
-
 ```ts
 {
   commentary: string,
   sentiment: "hype" | "roast" | "neutral",
-  crowdEnergy: number
+  crowdEnergy: number,
+  screenCaption?: string
 }
 ```
 
-### `POST /api/voice` (optional)
+### `POST /api/voice`
 
 Input:
-
 ```ts
-{ text, voiceId }
+{
+  text: string,
+  voiceId?: string
+}
 ```
 
 Output:
-
 ```ts
-{ audioUrl }
-```
-
-If ElevenLabs slows us down, use browser speech synthesis for MVP.
-
-## LLM Core System Prompt
-
-```txt
-You are CrowdCast AI, a sports alternate-commentary engine for live fan experiences.
-
-Your job is to turn structured game events into short, punchy, family-friendly commentary lines that feel like a live arena announcer mixed with a funny sports fan.
-
-Rules:
-- Keep commentary under 28 words.
-- No profanity.
-- No slurs.
-- No sexual content.
-- No hate based on protected traits.
-- Do not mention injuries unless the event explicitly includes one.
-- Roast only the athletic moment, decision, or play, not the person's identity.
-- Make it funny, fast, and specific to the event.
-- If the event benefits the user's team, hype the user's team.
-- If the event hurts the opposing team, roast the opponent lightly.
-- Use basketball culture and fan language.
-- Avoid sounding like a generic chatbot.
-- Return valid JSON only.
-
-Return:
 {
-  "commentary": "...",
-  "sentiment": "hype" | "roast" | "neutral",
-  "crowdEnergy": 0-100,
-  "screenCaption": "short caption for stadium/watch-party display"
+  audioUrl: string | null,
+  provider?: "elevenlabs" | "browser_fallback",
+  message?: string
 }
 ```
 
-User prompt template:
+---
 
-```txt
-Game context:
-Home team: {{homeTeam}}
-Opposing team: {{opposingTeam}}
-User wants to support: {{supportTeam}}
-Target to roast when appropriate: {{targetTeam}}
-Mode: {{mode}}
-Intensity: {{intensity}}
-Persona: {{persona}}
+## Regional Relevance (Northeast MVP)
 
-Current event:
-{{eventJson}}
+- Built around a **Boston vs New York** NBA rivalry scenario for immediate local context
+- Uses language style that matches **regional fan culture** without crossing moderation boundaries
+- Keeps content **family-friendly** so it can be used in hackathon demos, student showcases, and sponsor-facing pilots
 
-Generate one alternate commentary line.
-```
+---
 
-## Example outputs
+## Demo Notes
 
-```json
-{
-  "commentary": "Tatum just pulled up from Cambridge and dropped it right on their heads.",
-  "sentiment": "hype",
-  "crowdEnergy": 94,
-  "screenCaption": "TATUM FROM DEEP"
-}
-```
+- No auth and no live sports feed required for MVP
+- Uses deterministic sample game events for predictable demos
+- If external APIs fail, app still works with local fallback commentary
 
-```json
-{
-  "commentary": "LeBron had the whole calendar year to line that up and still left it short.",
-  "sentiment": "roast",
-  "crowdEnergy": 88,
-  "screenCaption": "NOT THIS TIME"
-}
-```
+---
 
-```json
-{
-  "commentary": "Anthony Davis just handed that possession over like it came with a receipt.",
-  "sentiment": "roast",
-  "crowdEnergy": 82,
-  "screenCaption": "FREE DELIVERY"
-}
-```
+## License
 
-## Do Not Build
+Copyright (c) 2026 TrashTalk.
+All rights reserved.
 
-- live ESPN integration
-- real video understanding
-- login
-- database-heavy profile systems
-- social feed
-- true livestream sync
-- complex voice cloning
+---
 
-## Sponsorship angle
+<div align="center">
 
-Brands can sponsor commentary modes:
+**Built by Team TrashTalk at the Hult Hackathon 2026**
 
-- Red Bull Hype Mode
-- Dunkin Boston Mode
-- NBA Finals Chaos Mode
-
-## Final MVP
-
-1. Select team + target
-2. Click through fake live events
-3. Generate funny commentary
-4. Play voice
-5. Show crowd energy meter
+</div>
