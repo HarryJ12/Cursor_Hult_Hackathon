@@ -147,7 +147,7 @@ const DEMO_EVENTS: GameEvent[] = [
   },
 ];
 
-const CELTICS_CANNED: Array<{
+const CELTICS_CANNED_SPICY: Array<{
   line: string;
   sentiment: Sentiment;
   crowdEnergy: number;
@@ -172,10 +172,10 @@ const CELTICS_CANNED: Array<{
     screenCaption: "JB UNSTOPPABLE",
   },
   {
-    line: "You're gonna need the entire Knicks franchise to guard my manz.",
+    line: "Mikal Bridges been on half the league and still getting passed around.",
     sentiment: "roast",
     crowdEnergy: 70,
-    screenCaption: "WHOLE TEAM ON ONE",
+    screenCaption: "BRIDGES EXPOSED",
   },
   {
     line: "The crowd and I are exploding right now. Knicks, what are we doing?",
@@ -184,7 +184,7 @@ const CELTICS_CANNED: Array<{
     screenCaption: "WHITE FROM THE CORNER",
   },
   {
-    line: "Mr. Hart loves to cut on them Knicks. Somebody tell the Knicks to get their hairline fixed by Josh Hart.",
+    line: "Josh Hart is just Jalen Brunson's sidekick, cant do anything himself smh.",
     sentiment: "roast",
     crowdEnergy: 72,
     screenCaption: "HAIRLINE WATCH",
@@ -200,6 +200,62 @@ const CELTICS_CANNED: Array<{
     sentiment: "hype",
     crowdEnergy: 100,
     screenCaption: "CELTICS WIN",
+  },
+];
+
+const CELTICS_CANNED_UNHINGED: Array<{
+  line: string;
+  sentiment: Sentiment;
+  crowdEnergy: number;
+  screenCaption: string;
+}> = [
+  {
+    line: "Tatum just dropped that from way downtown and the Knicks crowd went silent like somebody unplugged the arena.",
+    sentiment: "hype",
+    crowdEnergy: 100,
+    screenCaption: "SILENCER THREE",
+  },
+  {
+    line: "He looks like the default 2K face scan before customization.",
+    sentiment: "roast",
+    crowdEnergy: 90,
+    screenCaption: "DEFAULT BUILD",
+  },
+  {
+    line: "Brown took off like he had cheat codes. Knicks defense looked stuck in warmups.",
+    sentiment: "hype",
+    crowdEnergy: 99,
+    screenCaption: "CHEAT CODE DUNK",
+  },
+  {
+    line: "Mikal Bridges been on half the league and still getting passed around.",
+    sentiment: "roast",
+    crowdEnergy: 92,
+    screenCaption: "BRIDGES EXPOSED",
+  },
+  {
+    line: "Derrick White from the corner again. Knicks are collecting jump-shot trauma in real time.",
+    sentiment: "hype",
+    crowdEnergy: 98,
+    screenCaption: "CORNER DAGGER",
+  },
+  {
+    line: "That's a lucky lay, he not doin that again.",
+    sentiment: "roast",
+    crowdEnergy: 90,
+    screenCaption: "LUCKY BOUNCE",
+  },
+  {
+    line: "Porzingis just sent that shot to another zip code. Rim protection on full lockdown.",
+    sentiment: "hype",
+    crowdEnergy: 97,
+    screenCaption: "ZIP CODE BLOCK",
+  },
+  {
+    line: "Final buzzer, Celtics handled business. Knicks can hold this scoreboard all night.",
+    sentiment: "hype",
+    crowdEnergy: 100,
+    screenCaption: "GAME OVER",
   },
 ];
 
@@ -260,9 +316,15 @@ export default function HomePage() {
     stopVoice();
     setIsLoadingCommentary(true);
     const ev = DEMO_EVENTS[index];
+    const celticsCanned =
+      intensity === "unhinged_clean"
+        ? CELTICS_CANNED_UNHINGED
+        : intensity === "spicy"
+        ? CELTICS_CANNED_SPICY
+        : null;
 
-    if (selectedTeam === "celtics" && CELTICS_CANNED[index]) {
-      const canned = CELTICS_CANNED[index];
+    if (selectedTeam === "celtics" && celticsCanned?.[index]) {
+      const canned = celticsCanned[index];
       const data: CommentaryResponse = {
         commentary: canned.line,
         sentiment: canned.sentiment,
