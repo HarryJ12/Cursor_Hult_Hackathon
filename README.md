@@ -23,11 +23,11 @@ Fans want a stream that sounds like *their side* of the rivalry, with personalit
 **TrashTalk** solves this by turning structured game events into:
 
 - team-biased commentary
-- family-friendly roast/hype reactions
+- roast/hype reactions
 - playable AI voice output
 - live fan-energy signals for demo UX
 
-This MVP focuses on an East Coast rivalry context (Boston vs New York), which keeps it regionally relevant for local fan culture while staying clean and sponsor-safe.
+This MVP focuses on an East Coast rivalry context (Boston vs New York), which keeps it regionally relevant for local fan culture while staying sponsor-safe.
 
 ---
 
@@ -215,15 +215,6 @@ Output:
   message?: string
 }
 ```
-
----
-
-## Regional Relevance (Northeast MVP)
-
-- Built around a **Boston vs New York** NBA rivalry scenario for immediate local context
-- Uses language style that matches **regional fan culture** without crossing moderation boundaries
-- Keeps content **family-friendly** so it can be used in hackathon demos, student showcases, and sponsor-facing pilots
-
 ---
 
 ## Demo Notes
