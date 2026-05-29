@@ -16,9 +16,7 @@
 
 ## Overview
 
-Most sports commentary is one-size-fits-all.
-
-Fans want a stream that sounds like *their side* of the rivalry, with personality and energy.
+Most sports commentary is one-size-fits-all but ans want a stream that sounds like *their side* of the rivalry, with personality and energy.
 
 **TrashTalk** solves this by turning structured game events into:
 
@@ -227,8 +225,7 @@ Output:
 
 ## License
 
-Copyright (c) 2026 TrashTalk.
-All rights reserved.
+Copyright © 2026 TrashTalk. All rights reserved.
 
 ---
 
